@@ -72,25 +72,25 @@ Start-Process microsoft-edge:https://jwt.io
 # USERS
 ######################################################
 #region Users
-Get-MgUser -UserId philip@myexchangelabs.com
-$User= Get-MgUser -UserId philip@myexchangelabs.com
+Get-MgUser -UserId philip@contoso.com
+$User= Get-MgUser -UserId philip@contoso.com
 
 # For Beta would prefix noun with Beta, eg.
-Get-MgBetaUser -UserId philip@myexchangelabs.com
+Get-MgBetaUser -UserId philip@contoso.com
 
 # Find info for a cmdlet, eg Update-MgUser, incl module & permissions
 Find-MgGraphCommand -Command Update-MgUser | Format-List Command,Module,Permissions
 Find-MgGraphCommand -Command Update-MgUser | Select -ExpandProperty Permissions
 
 # Updating should work, we connected using User.ReadWrite.All
-Update-MgUser -UserId michel@myexchangelabs.com -DisplayName 'Michel de Rooij'
+Update-MgUser -UserId michel@contoso.com -DisplayName 'Michel de Rooij'
 
 # Help for a cmdlet
 Get-Help Get-MgUser
 Get-Help Get-MgUser -Examples
 Get-Help Get-MgUser -ShowWindow
 
-$User= Get-MgUser -UserId philip@myexchangelabs.com
+$User= Get-MgUser -UserId philip@contoso.com
 $User | ConvertTo-Json
 $User.ToJsonString()
 # Tip: $User.ToJsonString() | code -
@@ -98,21 +98,21 @@ $User.ToJsonString()
 # Some properties are empty by default
 $User.LastPasswordChangeDateTime
 # Explicitly request these properties
-$User= Get-MgUser -UserId philip@myexchangelabs.com -Property LastPasswordChangeDateTime
+$User= Get-MgUser -UserId philip@contoso.com -Property LastPasswordChangeDateTime
 $User.LastPasswordChangeDateTime
 
 $passwordProfile = @{
     forceChangePasswordNextSignIn = $true
     password = ([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort {Get-Random})[0..20] -join ''
 }
-Update-MgUser -UserId francis@myexchangelabs.com -passwordProfile $passwordProfile
+Update-MgUser -UserId francis@contoso.com -passwordProfile $passwordProfile
 
 # Be aware of Eventual lag
-Get-MgUser -UserId francis@myexchangelabs.com | Select-Object DisplayName
-Update-MgUser -UserId francis@myexchangelabs.com -DisplayName 'Not Francis'
-Get-MgUser -UserId francis@myexchangelabs.com | Select-Object DisplayName
-Get-MgUser -Filter "userPrincipalName eq 'francis@myexchangelabs.com'" -ConsistencyLevel Eventual -CountVariable Count | Select-Object DisplayName
-Update-MgUser -UserId francis@myexchangelabs.com -DisplayName 'Francis Blake'
+Get-MgUser -UserId francis@contoso.com | Select-Object DisplayName
+Update-MgUser -UserId francis@contoso.com -DisplayName 'Not Francis'
+Get-MgUser -UserId francis@contoso.com | Select-Object DisplayName
+Get-MgUser -Filter "userPrincipalName eq 'francis@contoso.com'" -ConsistencyLevel Eventual -CountVariable Count | Select-Object DisplayName
+Update-MgUser -UserId francis@contoso.com -DisplayName 'Francis Blake'
 
 # Get licensing positions
 Get-MgSubscribedSku  | Select-Object SkuPartNumber,CapabilityStatus,ConsumedUnits,@{n='Enabled';e={$_.PrepaidUnits.Enabled}},@{n='SKU';e={ $_.SubscriptionIds -join ';'}} | Format-Table -AutoSize
@@ -139,13 +139,13 @@ $LicenseOptions= @{
     SkuId= $SKUToApply.SkuId
     DisabledPlans= $DisablePlans.ServicePlanId
 }
-Set-MgUserLicense -UserID olrik@myexchangelabs.com -AddLicenses $LicenseOptions -RemoveLicenses @()
-Get-MgUserLicenseDetail -UserID olrik@myexchangelabs.com | Select-Object SkuId,ServicePlanId,ServicePlanName
+Set-MgUserLicense -UserID olrik@contoso.com -AddLicenses $LicenseOptions -RemoveLicenses @()
+Get-MgUserLicenseDetail -UserID olrik@contoso.com | Select-Object SkuId,ServicePlanId,ServicePlanName
 
 # Remove a license
 $SKUtoRemove= Get-MgSubscribedSku | Where-Object { $_.SkuPartNumber -eq 'FLOW_FREE' }
 # Need to specify addLicenses 
-Set-MgUserlicense -UserId olrik@myexchangelabs.com -AddLicenses @() -RemoveLicenses $SKUtoRemove.SkuId 
+Set-MgUserlicense -UserId olrik@contoso.com -AddLicenses @() -RemoveLicenses $SKUtoRemove.SkuId 
 
 # Get one page of users
 Get-MgUser
@@ -170,11 +170,11 @@ $Records
 
 # Which users have EXCHANGE_S_ENTERPRISE (Plan 2)
 Get-MgSubscribedSku -Property SkuPartNumber, ServicePlans | Select-Object SkuPartNumber, @{n='ServicePlans';e={$_.ServicePlans.ServicePlanId}}
-Get-MgUserLicenseDetail -UserId philip@myexchangelabs.com
+Get-MgUserLicenseDetail -UserId philip@contoso.com
 
 # Get all groups someone is a member of - Get-MgUserMemberOf requires GroupMember.Read.All
 Connect-MgGraph -Scopes GroupMember.Read.All
-$Groups= Get-MgUserMemberOf -UserId philip@myexchangelabs.com
+$Groups= Get-MgUserMemberOf -UserId philip@contoso.com
 ForEach( $Group in $Groups) {
     $Object= [PsCustomObject]@{
         Id= $Group.Id
@@ -194,7 +194,7 @@ Get-MgUser -ExpandProperty MemberOf | Where-Object {$_.memberOf.Count -eq 0}
 Connect-MgGraph -Scopes AuditLog.Read.All
 # SignInActivity not default property, need to use -Property parameter
 # Also, UserId with Property only works when specifying Guid, so we use Filter
-$User= Get-MgUser -Filter "userPrincipalName eq 'michel@myexchangelabs.com'" -Property SignInActivity
+$User= Get-MgUser -Filter "userPrincipalName eq 'michel@contoso.com'" -Property SignInActivity
 $User | Select-Object Id, DisplayName, @{n='LastSignIn';e={$_.SignInActivity.LastSignInDateTime}}
 
 # Get all users not signed in after January 1st, 2024
@@ -220,7 +220,7 @@ Get-MgGroup -Filter 'assignedLicenses/$count ne 0' -ConsistencyLevel eventual -C
 
 
 # Get Users using Search to filter. Advanced query mode.
-Get-MgUser -Search "userPrincipalName:philip@myexchangelabs.com" -ConsistencyLevel eventual -CountVariable Records
+Get-MgUser -Search "userPrincipalName:philip@contoso.com" -ConsistencyLevel eventual -CountVariable Records
 # Combine Search & Filter
 Get-MgUser -Search "userPrincipalName:michel" -Filter "accountEnabled eq true" -ConsistencyLevel eventual -CountVariable Records
 #endregion
@@ -230,19 +230,19 @@ Import-Module Microsoft.Graph.Reports
 Get-MgAuditLogSignIn -Top 10 | Select createdDateTime,AppId,appDisplayName,userDisplayName
 
 # Working with Extension Attributes (similar principle for custom 'security' attributes)
-Update-MgUser –UserId newtest@myexchangelabs.com -onPremisesExtensionAttributes @{ extensionAttribute15= 'THX1138'}
+Update-MgUser –UserId newtest@contoso.com -onPremisesExtensionAttributes @{ extensionAttribute15= 'THX1138'}
 Get-MgUser -Filter "onPremisesExtensionAttributes/ExtensionAttribute15 eq 'THX1138'" -ConsistencyLevel eventual -CountVariable count
 
 # Clearing values: this won't work:
-Update-MgUser –UserId newtest@myexchangelabs.com -CompanyName $null
+Update-MgUser –UserId newtest@contoso.com -CompanyName $null
 # Workaround .. use direct patch (=update) queries
-$User= Get-MgUser -UserId newtest@myexchangelabs.com
+$User= Get-MgUser -UserId newtest@contoso.com
 Invoke-MgGraphRequest -Method Patch -Uri ('https://graph.microsoft.com/v1.0/Users/{0}' -f $User.Id) -Body @{ CompanyName= $null } -Debug
 
 # Working with Administrative Units
 Get-MgDirectoryAdministrativeUnit
 $AU= Get-MgDirectoryAdministrativeUnit -Filter "displayName eq 'Demo AU'"
-$User= Get-MgUser -UserId newtest@myexchangelabs.com
+$User= Get-MgUser -UserId newtest@contoso.com
 $odataId = 'https://graph.microsoft.com/v1.0/users/{0}' –f $User.Id
 New-MgDirectoryAdministrativeUnitMemberByRef -AdministrativeUnitId $AU.Id -OdataId $odataId
 # Remove call differs, as AUs can contain users, groups, devices etc.
@@ -289,12 +289,12 @@ Get-MgGroupMember -GroupId $Group.id | Select-Object Id, @{n='DisplayName';e={$_
 Remove-MgGroup -GroupId $Group.Id
 
 # Distribution Groups (&  Mail-Enabled Security Groups, use Security for Type )
-New-DistributionGroup -Name G-DGDemo -primarySmtpAddress g-dgdemo@myexchangelabs.com –Type Distribution
-Add-DistributionGroupMember -Identity G-DGDemo -Member philip@myexchangelabs.com
+New-DistributionGroup -Name G-DGDemo -primarySmtpAddress g-dgdemo@contoso.com –Type Distribution
+Add-DistributionGroupMember -Identity G-DGDemo -Member philip@contoso.com
 Remove-DistributionGroup -Identity G-DGDemo -Confirm:$false
 
 # Dynamic Distribution Groups
-New-DynamicDistributionGroup -Name G-DDGDemo -primarySmtpAddress g-ddgdemo@myexchangelabs.com -ConditionalDepartment 'Sales'
+New-DynamicDistributionGroup -Name G-DDGDemo -primarySmtpAddress g-ddgdemo@contoso.com -ConditionalDepartment 'Sales'
 
 $Group= Get-DynamicDistributionGroup -Identity G-DDGDemo
 Get-Recipient -RecipientPreviewFilter $Group.RecipientFilter
@@ -308,8 +308,8 @@ $Group= Get-MgGroup -Filter "MailNickname eq 'M365G-Marketing-Graph'"
 Update-MgGroup -GroupId $Group.Id -HideFromAddressLists:$true
 # We can check EXO using Group Id (will locate it using externalDirectoryObjectId in EXO)
 Get-UnifiedGroup -Identity $Group.Id | Select-Object Name,Guid,externalDirectoryObjectId,HiddenFromAddressListsEnabled
-Add-RecipientPermission -Identity $Group.Id -Trustee philip@myexchangelabs.com -AccessRights SendAs -Confirm:$false
-Set-UnifiedGroup -Identity $Group.Id -GrantSendOnBehalfTo philip@myexchangelabs.com
+Add-RecipientPermission -Identity $Group.Id -Trustee philip@contoso.com -AccessRights SendAs -Confirm:$false
+Set-UnifiedGroup -Identity $Group.Id -GrantSendOnBehalfTo philip@contoso.com
 
 Remove-MgGroup -GroupId $Group.Id
 
@@ -318,9 +318,9 @@ New-UnifiedGroup –DisplayName 'Marketing via EXO' –Alias M365G-Marketing-EXO
 Set-UnifiedGroup -Identity M365G-Marketing-EXO 
 
 # Manage members via EXO
-Add-UnifiedGroupLinks -Identity M365G-Marketing-EXO -LinkType Members -Links philip@myexchangelabs.com
-Add-RecipientPermission -Identity M365G-Marketing-EXO -Trustee philip@myexchangelabs.com -AccessRights SendAs -Confirm:$false
-Set-UnifiedGroup -Identity M365G-Marketing-EXO -GrantSendOnBehalfTo philip@myexchangelabs.com
+Add-UnifiedGroupLinks -Identity M365G-Marketing-EXO -LinkType Members -Links philip@contoso.com
+Add-RecipientPermission -Identity M365G-Marketing-EXO -Trustee philip@contoso.com -AccessRights SendAs -Confirm:$false
+Set-UnifiedGroup -Identity M365G-Marketing-EXO -GrantSendOnBehalfTo philip@contoso.com
 Remove-UnifiedGroup -Identity M365G-Marketing-EXO -Confirm:$false
 
 # Group Settings
